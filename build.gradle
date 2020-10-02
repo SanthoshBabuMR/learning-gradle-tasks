@@ -1,0 +1,107 @@
+apply plugin: 'java'
+
+task helloWorld 
+task upper
+task loop
+task examplewithDoMethods
+
+task emailMe(dependsOn: compileJava) {
+  doLast {
+    if (tasks.compileJava.didWork) {
+      println "compilation succceded"
+      
+    } else {
+      println "compilation failed"
+    }
+  }
+}
+
+task mockCompileJava {
+  if (System.properties["result"] == 'true') {
+    didWork = true;
+  } else {
+    didWork = false;
+  }
+}
+
+// gradle mEM -Dresult=true
+task mockEmailMe(dependsOn: mockCompileJava) {
+  doLast {
+    if (tasks.mockCompileJava.didWork) {
+      println "compilation succceded"
+      println "$path"
+    } else {
+      println "compilation failed"
+    }
+  }
+}
+
+helloWorld {
+  doLast {
+    println 'hello, world'
+  }
+}
+
+// gradle hW
+// gradle -Dproceed=true hW
+helloWorld.onlyIf {
+  System.properties["proceed"] == 'true'
+}
+
+helloWorld.doFirst {
+  println "pre helloworld task"
+}
+
+upper {
+  doLast {
+    dependsOn["loop"]
+    String sth = "I'm Gradle";
+    println "Original " + sth
+    println "Upper case: " + sth.toUpperCase()
+  }
+}
+
+upper {
+  doLast {
+    println "2nd definition"
+  }
+}
+
+loop {
+  6.times {
+    print "$it"
+  }
+  println('')
+}
+
+examplewithDoMethods {
+  println "configuration goes directly here"
+  
+  doFirst {
+    println "this will be executed first. similar to pre build"
+  }
+  doLast {
+    println "this will be executed first. similar to post build"
+  }
+  
+}
+
+task myZip(type: Zip) {
+  from 'src'
+  baseName 'project'
+  destinationDir(file('/Users/sbabu31/'))
+
+  // destinationDirectory ''
+}
+
+task myCopy (type: Copy) {
+  from './src'
+  into './dest'
+  doLast {
+    if (didWork) {
+      println ("myCopy task completed successfully")
+    } else {
+      println ("myCopy task completed errored")
+    }
+  }
+}
